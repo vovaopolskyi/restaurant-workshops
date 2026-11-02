@@ -15,6 +15,7 @@ node_modules/
 # Local env
 .env
 .env.local
+**/.venv/
 
 # Terraform
 **/.terraform/
@@ -24,3 +25,10 @@ node_modules/
 *.tfvars.json
 crash.log
 crash.*.log
+*.tfplan
+**/backend.local.hcl
+/diagnostics/
+
+# Generated local deployment configuration and logs
+**/.syndicate-config-local/
+*.zip

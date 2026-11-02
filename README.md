@@ -1,3 +1,13 @@
+# Restaurant Workshops
+
+Angular and .NET restaurant application deployed on AWS with Terraform and AWS Syndicate.
+
+- [Workshop 4: deployment changes, verification and setup](docs/workshop-04.md)
+- [Deployed frontend](https://d2ebas3eqwfhw7.cloudfront.net)
+- Workshop 5 Owner functionality will be submitted separately.
+
+The initial commit preserves the original workshop archive. The workshop 4 branch contains the deployment fixes and helper scripts.
+
 # Deployment Guide
 
 This repo uses three deployment tracks:

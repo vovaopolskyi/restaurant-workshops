@@ -247,7 +247,10 @@
           "enable_proxy": true
         }
       },
-      "/locations/{locationId}/dishes/{dishId}": {
+      "/locations/{id}/dishes/{dishId}": {
+        "enable_cors": {
+          "state": true
+        },
         "DELETE": {
           "authorization_type": "cognito_authorizer",
           "integration_type": "lambda",
@@ -256,7 +259,10 @@
           "default_error_pattern": true
         }
       },
-      "/locations/{locationId}/tables/all": {
+      "/locations/{id}/tables/all": {
+        "enable_cors": {
+          "state": true
+        },
         "GET": {
           "authorization_type": "cognito_authorizer",
           "integration_type": "lambda",
@@ -266,6 +272,9 @@
         }
       },
       "/tables/{id}": {
+        "enable_cors": {
+          "state": true
+        },
         "PUT": {
           "authorization_type": "cognito_authorizer",
           "integration_type": "lambda",
