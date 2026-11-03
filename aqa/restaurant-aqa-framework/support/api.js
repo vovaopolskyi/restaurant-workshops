@@ -29,6 +29,11 @@ export class RestaurantApi {
 
   async json(method, path, data) {
     const response = await this.call(method, path, data);
+    if (!response.ok() && path === '/signin') {
+      const body = await response.json().catch(() => ({}));
+      const message = typeof body.error === 'string' ? body.error : 'Check the private account configuration.';
+      throw new Error(`Test account sign-in returned HTTP ${response.status()}: ${message}`);
+    }
     expect(response.ok(), `${method} ${operationName(path)} returned HTTP ${response.status()}`).toBe(true);
     return response.json();
   }

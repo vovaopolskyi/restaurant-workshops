@@ -4,6 +4,7 @@ import { loadEnv } from './support/env.js';
 loadEnv();
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './support/global-setup.js',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // Each retry gets a new reservation and independent browser context.
