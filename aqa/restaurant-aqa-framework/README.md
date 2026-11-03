@@ -148,6 +148,8 @@ Verified locally against the deployed application on 2026-11-03:
 
 The two successful runs cover all 36 scenarios across runs; a fresh full 36-test run on the final revision has not yet been recorded. Local reports are ignored (`playwright-report/`, `test-results/`, `diagnostics/workshop8/`). A successful GitHub Actions live run is not yet claimed.
 
+The commit history retains the fixes discovered during execution: compatible test-account emails, authentication preflight, explicit Waiter loading readiness, bounded dashboard detail requests, and synchronized order navigation. These changes are separate from the initial scenario commits.
+
 The optional ReportPortal integration is not configured or claimed as complete. The implemented reporting path uses Playwright HTML/JUnit plus GitHub Actions artifacts. A CI definition alone is not evidence of a successful cloud run. CI intentionally skips `@admin` fixtures: running those in CI additionally requires a separately scoped AWS identity; ordinary application credentials cannot access DynamoDB directly.
 
 References: [Playwright CI setup](https://playwright.dev/docs/ci-intro), [GitHub workflow events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows).
