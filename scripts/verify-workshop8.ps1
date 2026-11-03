@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory = $true)][string]$ExpectedAccountId,
     [Parameter(Mandatory = $true)][string]$FrontendBucket,
     [Parameter(Mandatory = $true)][string]$CloudFrontDomain,
-    [string]$Region = 'us-west-2'
+    [string]$Region = 'us-west-2',
+    [switch]$FailedOnly
 )
 
 $ErrorActionPreference = 'Continue'
@@ -61,7 +62,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'AQA static checks failed.' }
     & npm.cmd run test:list
     if ($LASTEXITCODE -ne 0) { throw 'AQA test discovery failed.' }
-    & npm.cmd test 2>&1 | Tee-Object -FilePath (Join-Path $reportRoot 'e2e.txt')
+    $testArguments = @('test')
+    if ($FailedOnly) { $testArguments += @('--', '--grep', 'Waiter sees', '--workers=1') }
+    & npm.cmd @testArguments 2>&1 | Tee-Object -FilePath (Join-Path $reportRoot 'e2e.txt')
     if ($LASTEXITCODE -ne 0) { throw 'Some E2E tests failed. Keep the HTML report and diagnostics/workshop8/e2e.txt for review.' }
     Write-Host 'All selected E2E scenarios passed. Reports are in aqa/restaurant-aqa-framework/playwright-report.'
     Write-Host 'No Git push was performed.'

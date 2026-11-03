@@ -46,11 +46,13 @@ export class WaiterPage {
     }
     if (reservation.ownerName) card = card.filter({ hasText: reservation.ownerName });
     await expect(card, 'Select one reservation by its unique fixture date/time and table').toHaveCount(1);
-    const orderLoaded = this.page.waitForResponse((response) =>
+    const openOrder = card.getByRole('button', { name: 'Pre-order', exact: true });
+    await expect(openOrder, 'The submitted order should be available on the Waiter card').toBeVisible();
+    const [orderLoaded] = await Promise.all([this.page.waitForResponse((response) =>
       response.request().method() === 'GET' &&
-      new URL(response.url()).pathname.endsWith(`/orders/${encodeURIComponent(id)}`));
-    await card.getByRole('button', { name: 'Pre-order', exact: true }).click();
-    expect((await orderLoaded).ok(), 'Waiter should load this reservation order').toBe(true);
+      new URL(response.url()).pathname.endsWith(`/orders/${encodeURIComponent(id)}`)),
+      openOrder.click()]);
+    expect(orderLoaded.ok(), 'Waiter should load this reservation order').toBe(true);
     await expect(this.page).toHaveURL(/\/waiter-pre-order(?:[?#].*)?$/);
     await expect(this.page.locator('h2.title')).toContainText('Pre-order of');
   }
