@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, map, Observable, of, switchMap } from 'rxjs';
+import { mapWithConcurrency } from '@app/shared/helpers/map-with-concurrency';
 
 import { AuthenticationService } from '@app/auth/services/authentication.service';
 import { CardReservationComponent } from '@app/components/reservations/card-reservation/card-reservation.component';
@@ -461,8 +462,10 @@ export class WaiterDashboardComponent implements OnInit {
         switchMap((reservations) =>
           reservations.length === 0
             ? of([] as ReservationCustomer[])
-            : forkJoin(
-              reservations.map((reservation) => this.enrichReservation(reservation, waiterName))
+            : mapWithConcurrency(
+              reservations,
+              reservation => this.enrichReservation(reservation, waiterName),
+              2
             )
         ),
         takeUntilDestroyed(this.destroyRef)
