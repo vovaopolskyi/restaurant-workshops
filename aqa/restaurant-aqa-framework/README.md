@@ -58,6 +58,10 @@ For a fresh workshop environment, [prepare-workshop8.ps1](../../scripts/prepare-
 
 [verify-workshop8.ps1](../../scripts/verify-workshop8.ps1) accepts `-ExpectedAccountId`, `-FrontendBucket`, `-CloudFrontDomain`, and optional `-Region`. It checks the account/origin, runs frontend type/regression checks, builds and publishes the Owner authentication correction, refreshes CloudFront, then executes E2E. It preserves preview files and does not push Git commits. This publication is necessary because the previous interceptor omitted Owner authentication on protected `/guest/groups/.../sessions` routes.
 
+If an earlier bootstrap created `@example.invalid` accounts, run [repair-workshop8.ps1](../../scripts/repair-workshop8.ps1) with `-ExpectedAccountId` before testing again. The application's legacy email validator rejects that TLD. The repair replaces only recorded workshop accounts with `@example.com` accounts, suppresses email delivery, updates the private configuration and Waiter assignment, and disables the old accounts. Existing table/location fixtures stay in place. New bootstraps already use the compatible reserved example domain.
+
+Before creating any reservation, global setup verifies sign-in and roles for all three accounts. An account configuration error therefore stops the run once with a clear message instead of failing every scenario during setup.
+
 ```powershell
 npm run check          # Static JavaScript checks
 npm run test:list      # Discover scenarios without creating application data

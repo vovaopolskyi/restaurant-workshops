@@ -123,7 +123,9 @@ try {
 
     $accounts = @{}
     foreach ($kind in @('OWNER', 'OTHER', 'WAITER')) {
-        $username = "aqa-$($kind.ToLowerInvariant())-$runId@example.invalid"
+        # The application's legacy email regex accepts only 2-3 character TLDs.
+        # example.com is reserved for examples; invitation delivery is suppressed.
+        $username = "aqa-$($kind.ToLowerInvariant())-$runId@example.com"
         $password = New-TestPassword
         $secretValues.Add($password)
         $role = 'Customer'
