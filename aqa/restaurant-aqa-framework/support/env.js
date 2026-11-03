@@ -13,6 +13,7 @@ export function required(name) {
 }
 
 export function environment() {
+  if (required('RUN_LIVE_E2E') !== 'true') throw new Error('Set RUN_LIVE_E2E=true to create test reservations in your environment.');
   const baseURL = required('BASE_URL');
   const apiURL = required('API_BASE_URL').replace(/\/$/, '');
   for (const value of [baseURL, apiURL]) {

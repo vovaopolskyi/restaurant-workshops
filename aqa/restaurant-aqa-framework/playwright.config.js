@@ -8,7 +8,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   // Each retry gets a new reservation and independent browser context.
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  workers: 2,
   timeout: 120_000,
   expect: { timeout: 20_000 },
   globalTimeout: 30 * 60_000,

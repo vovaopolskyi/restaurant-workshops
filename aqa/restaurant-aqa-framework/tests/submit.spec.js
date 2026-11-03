@@ -13,6 +13,7 @@ test('@L2 @ui Owner consolidates submitted dishes and the Waiter sees the final 
   await ui.expectGrandTotal(s.dish.price * 5 + s.secondDish.price);
   await ui.submit();
   await ui.expectSent();
+  await expect.poll(async () => (await s.owner.order(s.reservationId)).status).toBe(3);
   const order = await s.owner.order(s.reservationId);
   expect(order.status).toBe(3);
   expect(order.orderItems.map(i => ({ id: i.dish.id, quantity: i.quantity })).sort((a,b) => a.id.localeCompare(b.id)))
@@ -44,6 +45,7 @@ test('@L2 @api Repeating submit returns 400 and does not duplicate quantities', 
   await waitForGuest(s, guest);
   const submitted = await s.owner.submit(s.groupId, s.reservationId);
   expect(submitted.status()).toBe(200);
+  await expect.poll(async () => (await s.owner.order(s.reservationId)).status).toBe(3);
   const before = await s.owner.order(s.reservationId);
   await expectError(await s.owner.submit(s.groupId, s.reservationId), 400, 'Only an open group reservation');
   expect(await s.owner.order(s.reservationId)).toEqual(before);

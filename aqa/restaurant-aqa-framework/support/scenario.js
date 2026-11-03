@@ -50,7 +50,10 @@ export async function createScenario(request, testInfo, { order = true } = {}) {
   const settings = environment();
   const { locationId } = settings;
   const tableIds = (process.env.TEST_TABLE_IDS?.trim() || settings.tableId).split(',').map((value) => value.trim()).filter(Boolean);
-  const tableId = tableIds[testInfo.workerIndex % tableIds.length];
+  if (new Set(tableIds).size < testInfo.config.workers) {
+    throw new Error('Configure one distinct TEST_TABLE_IDS entry per worker, or run with --workers=1.');
+  }
+  const tableId = tableIds[testInfo.parallelIndex % tableIds.length];
   owner.settings = { ...owner.settings, tableId };
   const roles = new Map([['OWNER', owner]]);
   // This management endpoint is waiter-only. Resolve real table metadata instead
@@ -91,6 +94,10 @@ export async function createScenario(request, testInfo, { order = true } = {}) {
   try {
     const reservation = await reserveUniqueSlot(owner, testInfo);
     reservationId = reservation.id;
+    const waiterIdentity = await waiter.me();
+    if (reservation.waiterId !== waiterIdentity.id) {
+      throw new Error('The reservation was assigned to another waiter. Use the isolated bootstrap location with only the configured test waiter.');
+    }
     const invitation = await owner.invite(reservationId);
     const { groupId, token: inviteToken } = invitation;
     await expect.poll(async () => {

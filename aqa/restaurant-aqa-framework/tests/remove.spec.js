@@ -55,6 +55,7 @@ test('@L3 @ui Owner removes a guest, submits, and Waiter sees only retained dish
   await ui.remove('Removed Guest');
   await ui.submit();
   await ui.expectSent();
+  await expect.poll(async () => (await s.owner.order(s.reservationId)).status).toBe(3);
   const order = await s.owner.order(s.reservationId);
   expect(order.orderItems).toHaveLength(1);
   expect(order.orderItems[0].dish.id).toBe(s.dish.id);
