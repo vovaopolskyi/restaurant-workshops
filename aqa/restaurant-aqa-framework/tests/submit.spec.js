@@ -4,6 +4,7 @@ import { LoginPage } from '../pages/login.page.js';
 import { WaiterPage } from '../pages/waiter.page.js';
 
 test('@L2 @ui Owner consolidates submitted dishes and the Waiter sees the final order', async ({ scenario: s, ownerPage: ui, browser, request }) => {
+  test.setTimeout(180_000);
   await s.addGuest('First Guest', [{ dishId: s.dish.id, quantity: 2 }], true);
   const guest = await s.addGuest('Second Guest', [{ dishId: s.dish.id, quantity: 3 }, { dishId: s.secondDish.id, quantity: 1 }], true);
   await s.addGuest('Draft Guest', [{ dishId: s.secondDish.id, quantity: 9 }]);

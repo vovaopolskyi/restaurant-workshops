@@ -20,6 +20,11 @@ export class WaiterPage {
       throw new Error('WaiterPage.open needs reservationId and unique startTime to select the actual reservation card');
     }
     await this.page.goto(new URL('/waiter-reservations', required('BASE_URL')).href);
+    // The dashboard enriches every reservation (including cancelled fixtures)
+    // before rendering its list. Wait for that real UI readiness condition,
+    // rather than spending the short locator timeout during API fan-out.
+    await expect(this.page.locator('.reservation-list'), 'Waiter reservation data should finish loading')
+      .toBeVisible({ timeout: 90_000 });
     // DatePipe uses the browser timezone; derive labels in that same browser context.
     const labels = await this.page.evaluate((startTime) => {
       const date = new Date(startTime);

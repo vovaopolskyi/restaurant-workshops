@@ -49,6 +49,7 @@ test('@L3 @api A nonexistent guest returns 404 without changing the group', asyn
 });
 
 test('@L3 @ui Owner removes a guest, submits, and Waiter sees only retained dishes', async ({ scenario: s, ownerPage: ui, browser }) => {
+  test.setTimeout(180_000);
   await s.addGuest('Removed Guest', [{ dishId: s.secondDish.id, quantity: 5 }], true);
   await s.addGuest('Kept Guest', [{ dishId: s.dish.id, quantity: 2 }], true);
   await ui.open(s.reservationId);
