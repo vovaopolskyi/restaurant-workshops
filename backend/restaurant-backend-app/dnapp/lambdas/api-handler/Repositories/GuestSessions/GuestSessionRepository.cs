@@ -1,4 +1,6 @@
+using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
 using APIHandler.Constants;
 using APIHandler.Entities;
 using System.Collections.Generic;
@@ -7,12 +9,10 @@ using System.Threading.Tasks;
 
 namespace APIHandler.Repositories.GuestSessions;
 
-public class GuestSessionRepository(IDynamoDBContext context) : IGuestSessionRepository
+public class GuestSessionRepository(IDynamoDBContext context, IAmazonDynamoDB client) : IGuestSessionRepository
 {
-    public async Task<GuestSession?> GetByGuestSessionId(string id) => await context.LoadAsync<GuestSession?>(id, new LoadConfig()
-    {
-        OverrideTableName = ResourceNames.GuestSessionTableName
-    });
+    public async Task<GuestSession?> GetByGuestSessionId(string id) =>
+        await context.LoadAsync<GuestSession?>(id, DynamoConfig.LoadConfig(ResourceNames.GuestSessionTableName));
 
     public async Task<GuestSession?> GetByGroupReservationId(string groupReservationId)
     {
@@ -50,6 +50,23 @@ public class GuestSessionRepository(IDynamoDBContext context) : IGuestSessionRep
         OverrideTableName = ResourceNames.GuestSessionTableName
     });
 
+    public async Task CreateOwnerSessionIfMissingAsync(GuestSession guestSession)
+    {
+        try
+        {
+            await client.PutItemAsync(new PutItemRequest
+            {
+                TableName = ResourceNames.GuestSessionTableName,
+                Item = context.ToDocument(guestSession).ToAttributeMap(),
+                ConditionExpression = "attribute_not_exists(guestSessionId)"
+            });
+        }
+        catch (ConditionalCheckFailedException)
+        {
+            // Another request created the same deterministic owner identity; preserve its cart.
+        }
+    }
+
     public async Task<int> CountByGroupReservationId(string groupReservationId)
     {
         List<GuestSession> result = await context.QueryAsync<GuestSession>(groupReservationId, new QueryConfig
@@ -58,7 +75,7 @@ public class GuestSessionRepository(IDynamoDBContext context) : IGuestSessionRep
             IndexName = GlobalSecondaryIndexes.GuestSession.GroupReservationId
         }).GetRemainingAsync();
 
-        return result.Count;
+        return result.Count(session => !session.IsOwnerSession);
     }
 
     public async Task DeleteAsync(GuestSession session)

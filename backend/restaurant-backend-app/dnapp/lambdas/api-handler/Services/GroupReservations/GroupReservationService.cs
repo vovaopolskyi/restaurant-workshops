@@ -73,6 +73,8 @@ public class GroupReservationService(
 
     public async Task<GroupReservation> CreateGroupReservationAsync(string reservationId)
     {
+        var reservation = await reservationRepository.GetReservationByIdAsync(reservationId)
+            ?? throw new ReservationNotFoundException($"Reservation '{reservationId}' was not found.");
         var groupReservation = new GroupReservation
         {
             GroupReservationId = Guid.NewGuid().ToString(),
@@ -82,6 +84,7 @@ public class GroupReservationService(
         };
 
         await groupReservationRepository.SaveGroupReservationAsync(groupReservation);
+        await EnsureOwnerSessionAsync(groupReservation, reservation.CustomerId);
         return groupReservation;
     }
 
@@ -89,9 +92,33 @@ public class GroupReservationService(
     {
         GroupReservation? group = await groupReservationRepository.GetByReservationIdAsync(reservationId);
         if (group is not null)
+        {
+            var reservation = await reservationRepository.GetReservationByIdAsync(reservationId)
+                ?? throw new ReservationNotFoundException($"Reservation '{reservationId}' was not found.");
+            await EnsureOwnerSessionAsync(group, reservation.CustomerId);
             return;
+        }
 
         await CreateGroupReservationAsync(reservationId);
+    }
+
+    private async Task EnsureOwnerSessionAsync(GroupReservation group, string? userId)
+    {
+        // Waiter-created reservations without a customer have no authenticated owner.
+        if (string.IsNullOrWhiteSpace(userId))
+            return;
+        var sessionId = $"owner-{group.GroupReservationId}";
+        if (await guestSessionRepository.GetByGuestSessionId(sessionId) is not null)
+            return;
+        await guestSessionRepository.CreateOwnerSessionIfMissingAsync(new GuestSession
+        {
+            Id = sessionId,
+            GroupReservationId = group.GroupReservationId,
+            GuestName = "Owner",
+            Dishes = [],
+            IsOwnerSession = true,
+            OwnerUserId = userId
+        });
     }
 
     public async Task UpdateGroupReservationStatusAsync(string groupReservationId, GroupReservationStatus status)

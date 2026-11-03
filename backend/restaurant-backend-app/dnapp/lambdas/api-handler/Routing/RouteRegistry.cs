@@ -26,6 +26,7 @@ using APIHandler.Repositories.Auth;
 using APIHandler.Repositories.Dishes;
 using APIHandler.Repositories.Feedbacks;
 using APIHandler.Repositories.GroupReservations;
+using APIHandler.Repositories.GroupPreOrders;
 using APIHandler.Repositories.GuestSessions;
 using APIHandler.Repositories.Locations;
 using APIHandler.Repositories.Notifications;
@@ -43,6 +44,7 @@ using APIHandler.Services.GuestSessions;
 using APIHandler.Services.Locations;
 using APIHandler.Services.Notifications;
 using APIHandler.Services.Orders;
+using APIHandler.Services.OwnerPreOrders;
 using APIHandler.Services.Reports;
 using APIHandler.Services.Reports.Interfaces;
 using APIHandler.Services.Reservations;
@@ -96,6 +98,7 @@ public static class RouteRegistry
         services.AddSingleton<IReportRepository, ReportRepository>();
         services.AddSingleton<IGuestSessionRepository, GuestSessionRepository>();
         services.AddSingleton<IGroupReservationRepository, GroupReservationRepository>();
+        services.AddSingleton<IGroupPreOrderRepository, GroupPreOrderRepository>();
         services.AddSingleton<ITableRepository, TableRepository>();
 
         // 3. Services
@@ -112,6 +115,7 @@ public static class RouteRegistry
         services.AddSingleton<IReservationService, ReservationService>();
         services.AddSingleton<IFeedbackService, FeedbackService>();
         services.AddSingleton<IGuestSessionService, GuestSessionService>();
+        services.AddSingleton<IOwnerPreOrderService, OwnerPreOrderService>();
         services.AddSingleton<IGuestAuthorizationService, GuestAuthorizationService>();
         services.AddSingleton<IReportService, ReportService>();
 
@@ -185,6 +189,10 @@ public static class RouteRegistry
         ];
 
         List<RouteHandler> GetGuestAndGroupRoutes() => [
+            new RouteHandler(new Route(HttpMethods.GET, "/guest/groups/{groupReservationId}/sessions"), ActivatorUtilities.CreateInstance<GetGroupSessionsHandler>(provider)),
+            new RouteHandler(new Route(HttpMethods.GET, "/guest/group/{groupReservationId}/sessions"), ActivatorUtilities.CreateInstance<GetGroupSessionsHandler>(provider)),
+            new RouteHandler(new Route(HttpMethods.GET, "/reservations/{reservationId}/guest-session-id"), ActivatorUtilities.CreateInstance<GetOwnerSessionIdHandler>(provider)),
+            new RouteHandler(new Route(HttpMethods.POST, "/group-reservations/{groupReservationId}/submit"), ActivatorUtilities.CreateInstance<SubmitGroupPreOrderHandler>(provider)),
             new RouteHandler(new Route(HttpMethods.POST, "/guest/sessions"), ActivatorUtilities.CreateInstance<CreateGuestSessionHandler>(provider)),
             new RouteHandler(new Route(HttpMethods.GET, "/guest/sessions/{guestSessionId}"), ActivatorUtilities.CreateInstance<GetGuestSessionHandler>(provider)),
             new RouteHandler(new Route(HttpMethods.POST, "/guest/sessions/{guestSessionId}/dishes"), ActivatorUtilities.CreateInstance<AddDishToGuestSessionHandler>(provider)),
