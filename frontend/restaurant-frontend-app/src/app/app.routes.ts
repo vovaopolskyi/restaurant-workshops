@@ -1,3 +1,4 @@
+import { groupOrderGuard } from './auth/guards/group-order.guard';
 import { Routes } from '@angular/router';
 import { RegisterComponent } from './auth/components/register/register.component';
 import { LocationOverviewComponent } from './components/location-overview/location-overview.component';
@@ -87,6 +88,12 @@ export const routes: Routes = [
           import('./pages/waiter-pre-order-page/waiter-pre-order-page.component').then(
             (m) => m.WaiterPreOrderPageComponent
           ),
+      },
+      {
+        path: 'reservations/:reservationId/group-order',
+        canActivate: [groupOrderGuard],
+        data: { authorized: true },
+        loadComponent: () => import('./pages/group-order-page/group-order-page.component').then((module) => module.GroupOrderPageComponent),
       },
       {
         path: 'guest-pre-order-expired',

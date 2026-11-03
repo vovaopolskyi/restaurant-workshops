@@ -1,4 +1,7 @@
 <li class="card">
+  @if (role() === Roles.CUSTOMER && r().guestCount > 1 && r().status === ReservationStatusCustomer.Reserved) {
+    <button type="button" class="button button--secondary button--large" (click)="openGroupOrder()">Group Pre-Order</button>
+  }
   <div class="details-wrapper">
     <div class="details-line with-table">
       <div class="details">

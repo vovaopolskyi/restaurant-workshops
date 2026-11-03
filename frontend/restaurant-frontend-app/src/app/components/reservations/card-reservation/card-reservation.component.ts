@@ -217,6 +217,10 @@ export class CardReservationComponent {
     });
   }
 
+  openGroupOrder(): void {
+    void this.router.navigate(['/reservations', this.r().id, 'group-order']);
+  }
+
   private navigateToWaiterPreOrder(): void {
     const reservation = this.r();
 
