@@ -1,0 +1,19 @@
+{
+  "name": "restaurant-workshop-08-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list",
+    "test:l1": "playwright test --grep @L1",
+    "test:l2": "playwright test --grep @L2",
+    "test:l3": "playwright test --grep @L3",
+    "test:api": "playwright test --grep @api",
+    "test:ui": "playwright test --grep @ui",
+    "report": "playwright show-report",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": { "@playwright/test": "1.58.2" }
+}
