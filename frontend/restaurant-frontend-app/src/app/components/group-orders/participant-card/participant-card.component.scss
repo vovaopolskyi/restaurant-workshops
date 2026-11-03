@@ -1,0 +1,111 @@
+@use 'sass:color';
+@use 'app/shared/styles/abstracts/colors' as palette;
+:host {
+  display: block;
+}
+.participant-card {
+  box-sizing: border-box;
+  border: 1px solid palette.$neutral-200;
+  background: palette.$neutral-0;
+  border-radius: 16px;
+  padding: 24px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+}
+h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.chip {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  background: color.mix(palette.$bg-yellow, palette.$neutral-0, 75%);
+  color: palette.$neutral-700;
+}
+.submitted {
+  background: color.mix(palette.$bg-green, palette.$neutral-0, 45%);
+  color: palette.$green-800;
+}
+.remove {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  padding: 0 0 4px;
+  font: inherit;
+  cursor: pointer;
+}
+.items {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid palette.$neutral-100;
+}
+img,
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 40px;
+  height: 40px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  background: color.mix(palette.$bg-green, palette.$neutral-0, 45%);
+  color: palette.$green-800;
+}
+.name {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.quantity {
+  white-space: nowrap;
+  color: palette.$neutral-600;
+}
+.price {
+  font-weight: 500;
+  text-align: right;
+}
+.subtotal {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid palette.$neutral-100;
+  font-weight: 600;
+}
+.empty {
+  color: palette.$neutral-600;
+}
+button:focus-visible {
+  outline: 2px solid palette.$green-600;
+  outline-offset: 4px;
+}
+@media (max-width: 480px) {
+  .participant-card {
+    padding: 16px;
+  }
+  header {
+    flex-wrap: wrap;
+  }
+  li {
+    gap: 8px;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+  }
+  .price {
+    grid-column: 2 / 4;
+  }
+}
