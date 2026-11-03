@@ -37,6 +37,38 @@ describe('tokenInterceptor', () => {
     httpMock.verify();
   });
 
+  for (const path of ['/guest/groups/group-1/sessions', '/guest/groups/group-1/sessions/guest-1']) {
+    it(`adds the Owner token to ${path}`, () => {
+      const auth = TestBed.inject(AuthenticationService) as jasmine.SpyObj<AuthenticationService>;
+      auth.getTokens.and.returnValue({ idToken: 'owner-id-token', accessToken: 'owner-access-token' });
+      const url = `https://test.api${path}`;
+      http.request(path.endsWith('guest-1') ? 'DELETE' : 'GET', url).subscribe();
+      const request = httpMock.expectOne(url);
+      expect(request.request.headers.get('Authorization')).toBe('Bearer owner-id-token');
+      request.flush({ participants: [], total: 0 });
+    });
+  }
+
+  it('preserves a guest cart token and body instead of replacing it with Owner credentials', () => {
+    const auth = TestBed.inject(AuthenticationService) as jasmine.SpyObj<AuthenticationService>;
+    auth.getTokens.and.returnValue({ idToken: 'owner-id-token', accessToken: 'owner-access-token' });
+    const url = 'https://test.api/guest/sessions/guest-1/dishes';
+    const body = { dishId: 'dish-1', quantity: 2 };
+    http.post(url, body, { headers: { Authorization: 'Bearer guest-token' } }).subscribe();
+    const request = httpMock.expectOne(url);
+    expect(request.request.headers.get('Authorization')).toBe('Bearer guest-token');
+    expect(request.request.body).toEqual(body);
+    request.flush({});
+  });
+
+  it('keeps polling failures silent for Owner session requests', () => {
+    const url = 'https://test.api/guest/groups/group-1/sessions';
+    http.get(url, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
+      .subscribe({ error: () => undefined });
+    httpMock.expectOne(url).flush({}, { status: 500, statusText: 'Server Error' });
+    expect(toastService.error).not.toHaveBeenCalled();
+  });
+
   it('shows the server message in a toast for a 400 response', () => {
     http.post(URL, {}).subscribe({ error: () => undefined });
 
