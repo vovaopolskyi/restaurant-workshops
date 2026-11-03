@@ -100,7 +100,6 @@ public class GroupReservationServiceTests
 
     [Theory]
     [InlineAutoData(GroupReservationStatus.Closed)]
-    [InlineAutoData(GroupReservationStatus.Submitted)]
     public async Task GetGroupReservationByTokenAsync_GroupReservationIsNotOpen_ThrowsException(
         GroupReservationStatus status,
         GroupReservation groupReservation)
@@ -115,10 +114,11 @@ public class GroupReservationServiceTests
     }
 
     [Theory]
-    [AutoData]
-    public async Task GetGroupReservationByTokenAsync_WhenGuestCountIsMax_ThrowsGuestLimitExceeded(GroupReservation groupReservation, Reservation reservation)
+    [InlineAutoData(GroupReservationStatus.Open)]
+    [InlineAutoData(GroupReservationStatus.Submitted)]
+    public async Task GetGroupReservationByTokenAsync_FullOrSubmittedGroupRemainsReadable(GroupReservationStatus status, GroupReservation groupReservation, Reservation reservation)
     {
-        groupReservation.Status = GroupReservationStatus.Open;
+        groupReservation.Status = status;
         groupReservation.ReservationId = reservation.Id;
 
         _groupReservationRepositoryMock
@@ -133,7 +133,10 @@ public class GroupReservationServiceTests
             .Setup(r => r.CountByGroupReservationId(groupReservation.GroupReservationId))
             .ReturnsAsync(reservation.GuestCount);
 
-        await Assert.ThrowsAsync<GuestLimitExceededException>(() => _service.GetGroupReservationByTokenAsync(groupReservation.ReservationToken));
+        _tableRepositoryMock.Setup(repository => repository.GetTableAsync(reservation.TableId))
+            .ReturnsAsync(new Table { Id = reservation.TableId, LocationId = "location-1" });
+        var result = await _service.GetGroupReservationByTokenAsync(groupReservation.ReservationToken);
+        Assert.Equal(groupReservation.GroupReservationId, result.GroupReservationId);
     }
 
     [Theory]
@@ -231,7 +234,6 @@ public class GroupReservationServiceTests
 
     [Theory]
     [InlineAutoData(GroupReservationStatus.Closed, typeof(GroupReservationExpiredException))]
-    [InlineAutoData(GroupReservationStatus.Submitted, typeof(GroupReservationSubmittedException))]
     public async Task GetGroupReservationInviteTokenAsync_GroupStatusIsNotOpen_ThrowsException(GroupReservationStatus status, Type type, Reservation reservation, GroupReservation groupReservation)
     {
         reservation.Status = ReservationStatus.Reserved;
@@ -248,5 +250,16 @@ public class GroupReservationServiceTests
             .ReturnsAsync(groupReservation);
 
         await Assert.ThrowsAsync(type, () => _service.GetGroupReservationInviteTokenAsync(reservation.Id));
+    }
+    [Fact]
+    public async Task GetInviteToken_SubmittedGroupRemainsReadableForOwnerReview()
+    {
+        var reservation = new Reservation { Id = "res-1", TableId = "table-1", WaiterId = "waiter-1", GuestCount = 2, Status = ReservationStatus.Reserved };
+        var group = new GroupReservation { GroupReservationId = "group-1", ReservationId = reservation.Id, ReservationToken = "token", Status = GroupReservationStatus.Submitted };
+        _reservationRepositoryMock.Setup(repository => repository.GetReservationByIdAsync(reservation.Id)).ReturnsAsync(reservation);
+        _groupReservationRepositoryMock.Setup(repository => repository.GetByReservationIdAsync(reservation.Id)).ReturnsAsync(group);
+        var response = await _service.GetGroupReservationInviteTokenAsync(reservation.Id);
+        Assert.NotNull(response);
+        _guestSessionRepositoryMock.Verify(repository => repository.SaveAsync(It.IsAny<GuestSession>()), Times.Never);
     }
 }
