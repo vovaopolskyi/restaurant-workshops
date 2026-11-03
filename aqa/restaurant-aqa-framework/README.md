@@ -140,7 +140,13 @@ After a run, open its **Artifacts**, download the report bundle, extract it and 
 
 ## Validation status and optional work
 
-This README describes the intended executable workflow. It does not assert that live scenarios or the GitHub Actions workflow have run successfully: record the actual command, result and report when they have been executed against your configured deployment.
+Verified locally against the deployed application on 2026-11-03:
+
+- Initial full E2E run: 34 passed, 2 failed. Both failures involved the Waiter view.
+- After correcting the Waiter dashboard request fan-out, the focused run (`npm test -- --grep "Waiter sees" --workers=1`) passed both remaining scenarios: 2 passed, 0 failed, 0 skipped in 189.4 seconds (JUnit report).
+- Frontend regression suite: 70 passed, including concurrency coverage. Authentication interceptor suite: 6 passed. Application/spec TypeScript checks, production build and bundle placeholder check passed before AWS publication.
+
+The two successful runs cover all 36 scenarios across runs; a fresh full 36-test run on the final revision has not yet been recorded. Local reports are ignored (`playwright-report/`, `test-results/`, `diagnostics/workshop8/`). A successful GitHub Actions live run is not yet claimed.
 
 The optional ReportPortal integration is not configured or claimed as complete. The implemented reporting path uses Playwright HTML/JUnit plus GitHub Actions artifacts. A CI definition alone is not evidence of a successful cloud run. CI intentionally skips `@admin` fixtures: running those in CI additionally requires a separately scoped AWS identity; ordinary application credentials cannot access DynamoDB directly.
 
